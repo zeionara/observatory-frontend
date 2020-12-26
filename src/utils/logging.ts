@@ -4,4 +4,3 @@ export default {
     console.log(object_)
   }
 }
-  

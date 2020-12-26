@@ -2,7 +2,7 @@
   <div class="home">
     <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/> -->
-    <Authentication/>
+    <Authentication @sign-in="reloadPage" @sign-out="reloadPage"/>
   </div>
 </template>
 
@@ -17,5 +17,10 @@ import Authentication from '@/components/Authentication.vue';
     Authentication
   },
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  reloadPage() {
+    console.log("Reloading page...")
+    this.$forceUpdate()
+  }
+}
 </script>

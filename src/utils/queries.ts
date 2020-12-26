@@ -27,6 +27,24 @@ export default {
       }
     )
   },
+  isAuthenticated () {
+    return axios.get(
+      `http://${OBSERVATORY_BACKEND_HOST}:${OBSERVATORY_BACKEND_PORT}/is-authenticated`,
+      {
+        headers: {
+          Authorization: VueCookieNext.getCookie('token')
+        }
+      }
+    ).then(response => {
+      if (response.status == 200) {
+        return true
+      } else {
+        return false
+      }
+    }, error => {
+      return false
+    })
+  },
   put (path: string, body: object) {
     return axios.put(
       `http://${OBSERVATORY_BACKEND_HOST}:${OBSERVATORY_BACKEND_PORT}/${path}`,

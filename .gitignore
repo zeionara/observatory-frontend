@@ -1,5 +1,5 @@
 .DS_Store
-node_modules
+node_modules/*
 /dist
 
 
@@ -21,3 +21,10 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Special paths
+!node_modules/equal-vue
+node_modules/equal-vue/*
+!node_modules/equal-vue/dist
+node_modules/equal-vue/dist/*
+!node_modules/equal-vue/dist/equal.esm.js

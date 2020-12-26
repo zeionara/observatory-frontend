@@ -12,14 +12,15 @@ import { Vue } from 'vue-class-component'
 import queries from '@/utils/queries'
 import logging from '@/utils/logging'
 import { VueCookieNext } from 'vue-cookie-next'
+import encryption from '@/utils/encryption'
 
 export default class Authentication extends Vue {
   login = ""
   password = ""
 
   signin() {
-    console.log(`Signing in with credentials ${this.login}:${this.password}...`)
-    queries.post('login', { login: this.login, password: this.password })
+    console.log(`Signing in with credentials ${this.login}:${this.encryptedPassword}...`)
+    queries.post('login', { login: this.login, password: this.encryptedPassword })
     .then(response => {
       logging.logObject('Got response:', response)
       if (response.data) {
@@ -28,6 +29,10 @@ export default class Authentication extends Vue {
     }, error => {
       logging.logObject('Authentication error:', error)
     })
+  }
+
+  get encryptedPassword() {
+    return encryption.encrypt(this.password)
   }
 }
 </script>

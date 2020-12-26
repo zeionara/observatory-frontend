@@ -7,4 +7,3 @@ import 'equal-vue/dist/equal.css'
 import { VueCookieNext } from 'vue-cookie-next'
 
 createApp(App).use(Equal).use(VueCookieNext).use(store).use(router).mount('#app')
-

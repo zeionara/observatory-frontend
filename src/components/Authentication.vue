@@ -5,9 +5,10 @@
       <it-input v-model="login" message="Login" class="sign-in-input-field" :status="authenticationStatus"/>
       <it-input v-model="password" type="password" message="Password" class="sign-in-input-field" :status="authenticationStatus"/>
       <it-button type="primary" pulse outlined class="sign-button" v-on:click="signIn()">Sign in</it-button>
+      <it-progressbar id="sign-in-progress-bar" :style="'display: ' + (isProgressBarVisible ? 'block' : 'none')" infinite />
     </div>
     <div v-else>
-      <it-button type="primary" pulse outlined class="sign-button" v-on:click="signOut()">Sign out</it-button>
+      <it-button type="danger" pulse outlined class="sign-button" v-on:click="signOut()">Sign out</it-button>
     </div>
   </div>
 </template>
@@ -18,19 +19,17 @@ import queries from '@/utils/queries'
 import logging from '@/utils/logging'
 import { VueCookieNext } from 'vue-cookie-next'
 import encryption from '@/utils/encryption'
+import Authenticable from '@/components/Authenticable'
 
-export default class Authentication extends Vue {
+export default class Authentication extends Authenticable {
   login = ""
   password = ""
   authenticationStatus = ""
-  isAuthenticated = false
-
-  created() {
-    this.checkIsAuthenticated()
-  }
+  isProgressBarVisible = false
 
   signIn() {
     console.log(`Signing in with credentials ${this.login}:${this.encryptedPassword}...`)
+    this.isProgressBarVisible = true
     queries.post('sign-in', { login: this.login, password: this.encryptedPassword })
     .then(response => {
       logging.logObject('Got response:', response)
@@ -41,9 +40,11 @@ export default class Authentication extends Vue {
       this.authenticationStatus = "success"
       this.checkIsAuthenticated()
       this.$emit("sign-in")
+      this.isProgressBarVisible = false
     }, error => {
       logging.logObject('Authentication error:', error)
       this.authenticationStatus = "danger"
+      this.isProgressBarVisible = false
     })
   }
 
@@ -62,18 +63,6 @@ export default class Authentication extends Vue {
 
   get encryptedPassword() {
     return encryption.encrypt(this.password)
-  }
-
-  checkIsAuthenticated() {
-    if (!VueCookieNext.getCookie("token")) {
-      this.isAuthenticated = false
-    } else {
-      queries.isAuthenticated().then(result => {
-        this.isAuthenticated = result
-      }, _ => {
-        this.isAuthenticated = false
-      })
-    }
   }
 }
 </script>

@@ -20,8 +20,8 @@ export default {
     return axios.get(
       `http://${OBSERVATORY_BACKEND_HOST}:${OBSERVATORY_BACKEND_PORT}/${path}`,
       {
+        params: params,
         headers: {
-          params: params,
           Authorization: VueCookieNext.getCookie('token')
         }
       }

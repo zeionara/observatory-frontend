@@ -8,7 +8,8 @@
           <it-input v-for="(paramName, index) in description.params" :key="index" v-model="description.values[paramName]" :message="paramName" class="param-input-field"/>
           <it-button type="primary" pulse outlined class="start-experiment-button" v-on:click="startExperiment()">Start</it-button>
           <it-progressbar id="sign-in-progress-bar" :style="'display: ' + (isProgressBarVisible ? 'block' : 'none')" infinite />
-          <it-alert type="success" title="Experiment was created successfully" :body="'Experiment token is ' + token" :style="'display: ' + (isExperimentAlertVisible ? 'block' : 'none')"/>
+          <it-alert id="experiment-succsess-alert" type="success" title="Experiment was created successfully" :body="'Experiment token is ' + token" :style="'visibility: ' + (isExperimentSuccessAlertVisible ? 'visible' : 'hidden')"/>
+          <it-alert id="experiment-danger-alert" type="danger" title="Error when creating an experiment" :body="experimentCreationError" :style="'visibility: ' + (isExperimentDangerAlertVisible ? 'visible' : 'hidden')"/>
         </div>
       </it-tab>
       <it-tab title="Track">Second tab</it-tab>
@@ -31,8 +32,10 @@ import logging from '@/utils/logging'
 export default class ExperimentType extends Vue {
   description!: ExperimentTypeDescription
   isProgressBarVisible = false
-  isExperimentAlertVisible = false
+  isExperimentSuccessAlertVisible = false
+  isExperimentDangerAlertVisible = false
   token = ""
+  experimentCreationError = ""
   
   startExperiment() {
     console.log("Starting a new experiment...")
@@ -42,10 +45,14 @@ export default class ExperimentType extends Vue {
       logging.logObject('Got response:', response)
       this.token = response.data ? response.data['experiment-id'] : "none"
       this.isProgressBarVisible = false
-      this.isExperimentAlertVisible = true
+      this.isExperimentSuccessAlertVisible = true
+      this.isExperimentDangerAlertVisible = false
     }, error => {
       this.isProgressBarVisible = false
-      logging.logObject('Cannot start an experiment:', error)
+      this.isExperimentDangerAlertVisible = true
+      this.isExperimentSuccessAlertVisible = false
+      this.experimentCreationError = error.message
+      logging.logObject("Error creating an experiment: ", error.message)
     })
   }
 }

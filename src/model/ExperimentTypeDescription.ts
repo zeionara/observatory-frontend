@@ -1,3 +1,5 @@
+import { capitalize, kebabCaseToSnakeCase } from '@/utils/string'
+
 export class ExperimentTypeDescription {
     name: string
     params: Array<string>
@@ -14,6 +16,10 @@ export class ExperimentTypeDescription {
 
     get capitalizedName() {
         const normalizedName = this.name.replaceAll('-', ' ').toLowerCase()
-        return normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1)
+        return capitalize(normalizedName)
+    }
+
+    get snakeCasedName() {
+        return kebabCaseToSnakeCase(this.name)
     }
 }

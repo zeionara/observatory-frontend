@@ -1,4 +1,5 @@
 <template>
+  <link rel="stylesheet" type="text/css" href="/semantic.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
   <div class="experiment-type" style="display: flex; flex-direction: column; flex: 1">
@@ -8,12 +9,43 @@
           <it-input v-for="(paramName, index) in description.params" :key="index" v-model="description.values[paramName]" :message="paramName" class="param-input-field"/>
           <it-button type="primary" pulse outlined class="start-experiment-button" v-on:click="startExperiment()">Start</it-button>
           <it-progressbar id="sign-in-progress-bar" :style="'display: ' + (isProgressBarVisible ? 'block' : 'none')" infinite />
-          <it-alert id="experiment-succsess-alert" type="success" title="Experiment was created successfully" :body="'Experiment token is ' + token" :style="'visibility: ' + (isExperimentSuccessAlertVisible ? 'visible' : 'hidden')"/>
+          <a :href="'/experiment/' + token">
+            <it-alert id="experiment-succsess-alert" type="success" title="Experiment was created successfully" :body="'Experiment token is ' + token" :style="'visibility: ' + (isExperimentSuccessAlertVisible ? 'visible' : 'hidden')"/>
+          </a>
           <it-alert id="experiment-danger-alert" type="danger" title="Error when creating an experiment" :body="experimentCreationError" :style="'visibility: ' + (isExperimentDangerAlertVisible ? 'visible' : 'hidden')"/>
         </div>
       </it-tab>
-      <it-tab title="Track">Second tab</it-tab>
-      <it-tab title="Analyse">Third tab</it-tab>
+      <it-tab title="Track">
+        <table class="ui celled table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Started</th>
+              <th>Completed</th>
+              <th>Status</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, i) in experiments" :key="i">
+              <td data-label="Id"><a :href="'/experiment/' + item.id">{{ item.id }}</a></td>
+              <td data-label="Started">{{ new Date(item.startTimestamp * 1000).toString() }}</td>
+              <td data-label="Completed">{{ new Date(item.completionTimestamp * 1000).toString() }}</td>
+              <td data-label="Status" :class="item.isCompleted ? 'positive' : 'warning'">{{ item.isCompleted ? 'Completed' : 'Running' }}</td>
+              <td data-label="Progress">
+                <div class="ui indicating progress" :id="'progress-' + item.id" :data-percent="item.progress * 100">
+                  <div class="bar" :style="'transition-duration: 300ms; width: ' + item.progress * 100 + '%;'">
+                    <div class="progress">{{ item.progress * 100 + '%'}}</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </it-tab>
+      <it-tab title="Analyse">
+        <canvas id="myChart"></canvas>
+      </it-tab>
     </it-tabs>
   </div>
 </template>
@@ -23,6 +55,10 @@ import { ExperimentTypeDescription } from '@/model/ExperimentTypeDescription'
 import { Options, Vue } from 'vue-class-component'
 import queries from '@/utils/queries'
 import logging from '@/utils/logging'
+import { Experiment } from '@/model/Experiment'
+// import $ from 'jquery'
+import Chart from 'chart.js'
+import { backgroundColors, borderColors } from '@/utils/colors'
 
 @Options({
   props: {
@@ -36,7 +72,56 @@ export default class ExperimentType extends Vue {
   isExperimentDangerAlertVisible = false
   token = ""
   experimentCreationError = ""
-  
+  isExperimentsTableProgressBarVisible = false
+  experiments: Array<Experiment> = []
+  errorMessage = ""
+
+  created() {
+    this.queryExperiments()
+  }
+
+  mounted() {
+    const jqueryScript = document.createElement('script')
+    jqueryScript.setAttribute('src', 'https://code.jquery.com/jquery-3.1.1.min.js')
+    jqueryScript.setAttribute('integrity', 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=')
+    jqueryScript.setAttribute('crossorigin', 'anonymous')
+    document.head.appendChild(jqueryScript)
+
+    const semanticScript = document.createElement('script')
+    semanticScript.setAttribute('src', '/semantic.min.js')
+    document.head.appendChild(semanticScript)
+
+    //@ts-ignore
+    // const ctx = document.getElementById('myChart')!.getContext('2d');
+    // const myChart = new Chart(ctx, {
+    //     type: 'bar',
+    //     data: {
+    //         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    //         datasets: [{
+    //             label: '# of Votes',
+    //             data: [12, 19, 3, 5, 2, 3],
+    //             backgroundColor: 'rgba(255, 99, 132, 0.2)',
+    //             borderWidth: 1
+    //         },
+    //         {
+    //             label: '# of Notes',
+    //             data: [12, 19, 3, 5, 2, 3],
+    //             backgroundColor: 'rgba(255, 99, 132, 0.2)',
+    //             borderWidth: 1
+    //         }]
+    //     },
+    //     options: {
+    //         scales: {
+    //             yAxes: [{
+    //                 ticks: {
+    //                     beginAtZero: true
+    //                 }
+    //             }]
+    //         }
+    //     }
+    // });
+  }
+
   startExperiment() {
     console.log("Starting a new experiment...")
     this.isProgressBarVisible = true
@@ -53,6 +138,94 @@ export default class ExperimentType extends Vue {
       this.isExperimentSuccessAlertVisible = false
       this.experimentCreationError = error.message
       logging.logObject("Error creating an experiment: ", error.message)
+    })
+  }
+
+  queryExperiments() {
+    console.log("Fetching experiment data...")
+    this.isExperimentsTableProgressBarVisible = true
+    console.log(this.description.snakeCasedName)
+    queries.get('get-experiments', {'type': this.description.snakeCasedName})
+    .then(response => {
+      this.isExperimentsTableProgressBarVisible = false
+      logging.logObject('Got response:', response)
+      this.experiments = response.data['items'].map(item => new Experiment(item)).sort(function(lhs, rhs) {
+        return rhs.startTimestamp - lhs.startTimestamp;
+      })
+
+      const metrics: Array<string> = []
+
+      this.experiments.forEach(element => {
+        for(const [metric, value] of Object.entries(element.metrics)) {
+          if (!metrics.includes(metric)) {
+            metrics.push(metric)
+          }
+        }
+      })
+
+      console.log(metrics)
+
+      let colorIndex = -1
+
+      const datasets = this.experiments.map(function(experiment: Experiment){
+        colorIndex += 1
+        return {
+          label: experiment.id,
+          data: metrics.map(metric =>
+            experiment.metrics[metric]
+          ),
+          backgroundColor: backgroundColors[colorIndex],
+          borderColor: borderColors[colorIndex],
+          borderWidth: 1
+        }
+      })
+
+      console.log(datasets)
+
+      // const completedExperiments = this.experiments.filter((experiment) => experiment.isCompleted)
+
+
+
+      //@ts-ignore
+      const ctx = document.getElementById('myChart')!.getContext('2d');
+      const myChart = new Chart(ctx, {
+          type: 'bar',
+          data: 
+          {
+              labels: metrics,
+              datasets: datasets.slice(0, 5)
+              // [{
+              //     label: '# of Votes',
+              //     data: [12, 19, 3, 5, 2, 3],
+              //     backgroundColor: 'rgba(255, 99, 132, 1)',
+              //     borderWidth: 1
+              // },
+              // {
+              //     label: '# of Notes',
+              //     data: [12, 19, 3, 5, 2, 3],
+              //     backgroundColor: 'rgba(255, 99, 132, 1)',
+              //     borderWidth: 1
+              // }]
+          },
+          options: {
+              scales: {
+                  yAxes: [{
+                      ticks: {
+                          beginAtZero: true
+                      }
+                  }]
+              }
+          }
+      });
+      // this.experiments.forEach(element => {
+        // console.log(element.progress)
+        // $(`#progress-${element.id}`).progress({
+        //   percent: element.progress * 100
+        // });
+      // });
+    }, error => {
+      this.errorMessage = "Cannot fetch experiments"
+      logging.logObject("Error querying experiment: ", error.message)
     })
   }
 }

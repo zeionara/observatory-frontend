@@ -44,7 +44,7 @@
         </table>
       </it-tab>
       <it-tab title="Analyse">
-        <canvas id="myChart"></canvas>
+        <canvas id="experimentsChart"></canvas>
       </it-tab>
     </it-tabs>
   </div>
@@ -56,7 +56,6 @@ import { Options, Vue } from 'vue-class-component'
 import queries from '@/utils/queries'
 import logging from '@/utils/logging'
 import { Experiment } from '@/model/Experiment'
-// import $ from 'jquery'
 import Chart from 'chart.js'
 import { backgroundColors, borderColors } from '@/utils/colors'
 import { kebabCaseToSnakeCase } from '@/utils/string'
@@ -91,36 +90,6 @@ export default class ExperimentType extends Vue {
     const semanticScript = document.createElement('script')
     semanticScript.setAttribute('src', '/semantic.min.js')
     document.head.appendChild(semanticScript)
-
-    //@ts-ignore
-    // const ctx = document.getElementById('myChart')!.getContext('2d');
-    // const myChart = new Chart(ctx, {
-    //     type: 'bar',
-    //     data: {
-    //         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-    //         datasets: [{
-    //             label: '# of Votes',
-    //             data: [12, 19, 3, 5, 2, 3],
-    //             backgroundColor: 'rgba(255, 99, 132, 0.2)',
-    //             borderWidth: 1
-    //         },
-    //         {
-    //             label: '# of Notes',
-    //             data: [12, 19, 3, 5, 2, 3],
-    //             backgroundColor: 'rgba(255, 99, 132, 0.2)',
-    //             borderWidth: 1
-    //         }]
-    //     },
-    //     options: {
-    //         scales: {
-    //             yAxes: [{
-    //                 ticks: {
-    //                     beginAtZero: true
-    //                 }
-    //             }]
-    //         }
-    //     }
-    // });
   }
 
   startExperiment() {
@@ -164,8 +133,6 @@ export default class ExperimentType extends Vue {
         }
       })
 
-      console.log(metrics)
-
       let colorIndex = -1
 
       const datasets = this.experiments.map(function(experiment: Experiment){
@@ -181,32 +148,14 @@ export default class ExperimentType extends Vue {
         }
       })
 
-      console.log(datasets)
-
-      // const completedExperiments = this.experiments.filter((experiment) => experiment.isCompleted)
-
-
-
       //@ts-ignore
-      const ctx = document.getElementById('myChart')!.getContext('2d');
-      const myChart = new Chart(ctx, {
+      const ctx = document.getElementById('experimentsChart')!.getContext('2d');
+      const experimentsChart = new Chart(ctx, {
           type: 'bar',
           data: 
           {
               labels: metrics,
               datasets: datasets.slice(0, 5)
-              // [{
-              //     label: '# of Votes',
-              //     data: [12, 19, 3, 5, 2, 3],
-              //     backgroundColor: 'rgba(255, 99, 132, 1)',
-              //     borderWidth: 1
-              // },
-              // {
-              //     label: '# of Notes',
-              //     data: [12, 19, 3, 5, 2, 3],
-              //     backgroundColor: 'rgba(255, 99, 132, 1)',
-              //     borderWidth: 1
-              // }]
           },
           options: {
               scales: {
@@ -217,13 +166,7 @@ export default class ExperimentType extends Vue {
                   }]
               }
           }
-      });
-      // this.experiments.forEach(element => {
-        // console.log(element.progress)
-        // $(`#progress-${element.id}`).progress({
-        //   percent: element.progress * 100
-        // });
-      // });
+      })
     }, error => {
       this.errorMessage = "Cannot fetch experiments"
       logging.logObject("Error querying experiment: ", error.message)

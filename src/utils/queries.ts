@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { VueCookieNext } from 'vue-cookie-next'
 
-const OBSERVATORY_BACKEND_HOST="localhost"
-const OBSERVATORY_BACKEND_PORT=1720
+const OBSERVATORY_BACKEND_HOST=process.env['VUE_APP_BACKEND_HOST']
+const OBSERVATORY_BACKEND_PORT=process.env['VUE_APP_BACKEND_PORT']
 
 export default {
   post (path: string, body: object) {

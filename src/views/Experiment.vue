@@ -2,7 +2,6 @@
   <link rel="stylesheet" type="text/css" href="/semantic.min.css">
   <h1>Experiment {{ experimentDescription.id }}</h1>
   <h1>task: {{ experimentDescription.task }}</h1>
-  <!-- <h1>type: {{ "ok" + experimentDescription.experimentType }}</h1> -->
   <h2>
     <div class="ui grid centered">
       <div class="three wide column"></div>
@@ -12,8 +11,6 @@
       </div>
       <div class="three wide column"></div>
     </div>
-    <!-- <span v-if="experimentDescription.isCompleted">Completed</span> -->
-    <!-- <span v-else>Running</span> -->
   </h2>
   <h2>
     Started {{ new Date(experimentDescription.startTimestamp * 1000).toString() }}
@@ -24,7 +21,6 @@
 
   <div class="ui grid centered">
     <div class="three wide column">
-      <!-- <h2>Metrics</h2> -->
       <div class="metrics-table-container">
       <table class="ui red table">
         <thead>
@@ -43,7 +39,6 @@
       </div>    
     </div>
     <div class="three wide column">
-      <!-- <h2>Params</h2> -->
       <div class="params-table-container" v-if="experimentDescription.experimentType">
       <table class="ui green table">
         <thead>
@@ -62,12 +57,7 @@
       </div>
     </div>
   </div>
-  <!-- <div v-if="experimentDescription.experimentType">
-    <li v-for="(key, i) in experimentDescription.experimentType.params" :key="i">{{ key }}: {{ experimentDescription[key] }}</li>
-  </div> -->
   <it-progressbar id="sign-in-progress-bar" :style="'display: ' + (isProgressBarVisible ? 'block' : 'none')" infinite />
-<!-- <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> -->
-<!-- <script src="/semantic.min.js"></script> -->
 </template>
 
 <script lang="ts">
@@ -78,12 +68,7 @@ import logging from '@/utils/logging'
 import { Experiment } from '@/model/Experiment'
 
 export default class ExperimentType extends Vue {
-  // description!: ExperimentTypeDescription
   isProgressBarVisible = false
-  // isExperimentSuccessAlertVisible = false
-  // isExperimentDangerAlertVisible = false
-  // token = ""
-  // experimentCreationError = ""
   experimentDescription = {}
 
   created() {

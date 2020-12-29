@@ -59,6 +59,7 @@ import { Experiment } from '@/model/Experiment'
 // import $ from 'jquery'
 import Chart from 'chart.js'
 import { backgroundColors, borderColors } from '@/utils/colors'
+import { kebabCaseToSnakeCase } from '@/utils/string'
 
 @Options({
   props: {
@@ -125,7 +126,7 @@ export default class ExperimentType extends Vue {
   startExperiment() {
     console.log("Starting a new experiment...")
     this.isProgressBarVisible = true
-    queries.post('start-experiment', Object.assign(this.description.values, {'type': this.description.name}))
+    queries.post('start-experiment', Object.assign(this.description.values, {'task': this.description.snakeCasedName}))
     .then(response => {
       logging.logObject('Got response:', response)
       this.token = response.data ? response.data['experiment-id'] : "none"
